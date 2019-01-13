@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using CsharpHttpHelper;
@@ -13,7 +14,8 @@ namespace GetDailyAccounting
     class LoginInsure
     {
         private bool _islogin;//登录状态
-        private string _cookiealltheway;//cookie
+        private string _cookiealltheway;//新收付平台用的cookie
+        private string _cookieSSO;//uam用的sso的cookie
         private HttpResult _hhloginresult;
         public HttpResult Hhloginresult
         {
@@ -49,6 +51,12 @@ namespace GetDailyAccounting
             }
         }
 
+        public string cookieSSO
+        {
+            get { return this._cookieSSO; }
+            set { this._cookieSSO = value; }
+        }
+
         public bool login(User user)
         {
             this._hhloginresult = new HttpResult();
@@ -59,6 +67,8 @@ namespace GetDailyAccounting
             string ipAddress = user.UserIpAddress;
             string strqrcode = user.UserValidateCode;
             HttpItem hiloginItem = new HttpItem();
+
+            
             //取登录页面的cookie
             hiloginItem.URL = string.Format("http://{0}:7001/prpall/index.jsp",ipAddress);//URL这里都是测试     必需项
             //hiloginItem.URL = "http://9.0.6.69:7001/prpall/index.jsp";//URL这里都是测试     必需项
