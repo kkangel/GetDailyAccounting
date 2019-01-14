@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using CsharpHttpHelper;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 //using System.Web.HttpUtility;
 
@@ -57,12 +59,15 @@ namespace GetDailyAccounting
             get { return this._cookieSSO; }
             set { this._cookieSSO = value; }
         }
+
+        public User  user { get; set; }
         //1 先访问login.html获得cookie
         //    2 请求/workbench/controller/workbench/login/login? redUrl =
         public bool login(User user)
         {
             this._hhloginresult = new HttpResult();
             HttpHelper httphelper = new HttpHelper();
+            this.user = user;
             string strloginname = user.UserId;
             string strloginpwd = user.UserPwd;
             string strlongincomcode = user.UserComCode;
@@ -92,14 +97,35 @@ namespace GetDailyAccounting
             ///workbench/controller/workbench/login/login?redUrl=
             hiloginItem.URL = string.Format("http://{0}/workbench/controller/workbench/login/login?redUrl=", ipAddress);
             
-            strloginpwd = System.Web.HttpUtility.UrlEncode(strloginpwd);
+            //strloginpwd = System.Web.HttpUtility.UrlEncode(strloginpwd);
             //sessionUserCode=&sessionComCode=&sessionUserName=&QRCodeSwitch=1&UserCode=411123199004234524&Password=0.0.0.0.&ComCode=4101943202&qrCode=909647&RiskCode=0511&ClassCode=&ClassCodeSelect=05&RiskCodeSelect=0511&USE0509COM=%2C12%2C&CILIFESPECIALCITY=%2C2102%2C3302%2C3502%2C3702%2C4402%2C&image.x=41&image.y=12
-            hiloginItem.Postdata = string.Format("sessionUserCode=&sessionComCode=&sessionUserName=&QRCodeSwitch=1&UserCode={0}&Password={1}&ComCode={2}&qrCode={3}&RiskCode=0511&ClassCode=&ClassCodeSelect=05&RiskCodeSelect=0511&USE0509COM=%2C12%2C&CILIFESPECIALCITY=%2C2102%2C3302%2C3502%2C3702%2C4402%2C&image.x=102&image.y=13", strloginname, strloginpwd, strlongincomcode,strqrcode);
+            hiloginItem.Postdata = string.Format(JsonConvert.SerializeObject(user));
+            hiloginItem.ContentType = "application/json";
+           // hiloginItem.Cookie = this.cookiealltheway;
+            this.Hhloginresult = httphelper.GetHtml(hiloginItem);
 
 
-            this._hhloginresult = httphelper.GetHtml(hiloginItem);
-            this._cookiealltheway = this._hhloginresult.Cookie;
+            this.cookiealltheway = this.Hhloginresult.Cookie;
+            var responseJson = JsonConvert.DeserializeObject(Hhloginresult.Html) as JObject;
+            string isRightUser= (string) responseJson["flag"];
+            string redurl = (string)responseJson["redUrl"];
+            string systemUserId = (string) responseJson["userId"];
 
+            if (isRightUser == "true")
+            {
+                // /workbench/controller/workbench/login/authenticationTools?userId=89979dc56021684301602176c9a83323&redUrl=
+                hiloginItem.URL = string.Format("http://{0}/workbench/controller/workbench/login/authenticationTools?userId={1}&redUrl=",ipAddress,systemUserId);
+                hiloginItem.ContentType = "application/x-www-form-urlencoded";
+                Hhloginresult = httphelper.GetHtml(hiloginItem);
+                this.cookiealltheway = Hhloginresult.Cookie;
+                string location=  Hhloginresult.Header["Location"];
+
+                hiloginItem.URL = location;
+                Hhloginresult = httphelper.GetHtml(hiloginItem);
+                this.cookieSSO = Hhloginresult.Cookie;
+                Hhloginresult.Html
+
+            }
             return this._islogin = !this._hhloginresult.Html.Contains("302 Moved Temporarily");
         }
     }

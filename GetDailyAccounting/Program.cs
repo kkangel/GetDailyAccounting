@@ -19,6 +19,8 @@ namespace GetDailyAccounting
             string userPwd = "123456";
             string userCom = "";
             string userValidateCode = "";
+
+
             User hd2user = new User(userId,userPwd,userCom,userIpAddress,userValidateCode);
             Console.WriteLine( JsonConvert.SerializeObject(hd2user));
             Console.ReadLine();
