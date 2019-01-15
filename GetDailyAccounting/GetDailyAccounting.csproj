@@ -54,10 +54,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DailyAccount.cs" />
+    <Compile Include="GetPayDailyList.cs" />
+    <Compile Include="PayDailyAccount.cs" />
     <Compile Include="LoginInsure.cs" />
+    <Compile Include="PayDailyQuest.cs" />
+    <Compile Include="PayRefAccount.cs" />
+    <Compile Include="PayRefQuest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SessionInfoByUserId.cs" />
+    <Compile Include="SessionInformation.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>

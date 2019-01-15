@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace GetDailyAccounting
 {
     
-    public class DailyAccount 
+    public class PayDailyAccount 
     {
 	public string certiNO  { get; set; }//业务单号
 	public string payRefReason  { get; set; }//费用类型 R10:签单收保费 R72:代收应缴车船税 V10:保费销项税
@@ -38,10 +38,10 @@ namespace GetDailyAccounting
 	public string collBusinessTypeCode  { get; set; } //缴费状态 1:缴费成功 2:部分缴费成功 3:取消缴费 4:退费中 5:已退费 
 	public string systemCode  { get; set; }//系统类型 GSSYT 国寿收银台
 }
-    public class ResponseData
+    public class PayDailyAccountResponseData
     {
         [JsonProperty(PropertyName = "Data$")]
-        public List<DailyAccount> dailyAccount { get; set; }
+        public List<PayDailyAccount> dailyAccount { get; set; }
         [JsonProperty(PropertyName = "entityCount$")]
         public string total  { get; set; } //总条数
         [JsonProperty(PropertyName = "limit")]

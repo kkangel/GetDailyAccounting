@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using CsharpHttpHelper;
 using Newtonsoft.Json;
 
@@ -13,6 +14,8 @@ namespace GetDailyAccounting
     {
         static void Main(string[] args)
         {
+
+            string cookiealltheway;
             //互动二部樊荣 410105198709140028-  123456-
             string userIpAddress = "9.0.9.11";
             string userId = "410105198709140028";
@@ -22,7 +25,26 @@ namespace GetDailyAccounting
 
 
             User hd2user = new User(userId,userPwd,userCom,userIpAddress,userValidateCode);
-            Console.WriteLine( JsonConvert.SerializeObject(hd2user));
+            LoginInsure login= new LoginInsure();
+            bool islogin = login.login(hd2user);
+            if (islogin == true)
+            {
+
+                cookiealltheway = login.cookiealltheway;
+                Console.WriteLine("用户:{0} 登录成功",userId);
+                Console.Write("请输入要查询缴费清单的起始日期（YYYY-MM-DD）：");
+                //string strDateStart = Console.ReadLine();
+                string strDateStart = "2019-01-01";
+                DateTime dtDateStart = Convert.ToDateTime(strDateStart);
+                Console.Write("请输入要查询缴费清单的截止日期（YYYY-MM-DD）：");
+                //string strDateEnd = Console.ReadLine();
+                string strDateEnd = "2019-01-14";
+                DateTime dtDateEnd = Convert.ToDateTime(strDateEnd);
+                GetPayDailyList payDailyList =new GetPayDailyList();
+                payDailyList.CookieAllTheWay = cookiealltheway;
+                payDailyList.GetList(strDateStart,strDateEnd);
+            }
+           
             Console.ReadLine();
         }
     }

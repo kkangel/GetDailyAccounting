@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -65,8 +66,9 @@ namespace GetDailyAccounting
         //    2 请求/workbench/controller/workbench/login/login? redUrl =
         public bool login(User user)
         {
-            this._hhloginresult = new HttpResult();
+            Hhloginresult = new HttpResult();
             HttpHelper httphelper = new HttpHelper();
+            islogin = false;
             this.user = user;
             string strloginname = user.UserId;
             string strloginpwd = user.UserPwd;
@@ -76,57 +78,98 @@ namespace GetDailyAccounting
             HttpItem hiloginItem = new HttpItem();
 
 
-            //获取登录页面的cookie http://9.0.9.11/workbench/workbench/login.html
-            hiloginItem.URL = string.Format("http://{0}/workbench/workbench/login.html", ipAddress);//URL这里都是测试     必需项
-            //hiloginItem.URL = "http://9.0.6.69:7001/prpall/index.jsp";//URL这里都是测试     必需项
-            //hiloginItem.Referer = "http://9.0.6.69:7031/claimCar/logonin.do";
+            //1 获取登录页面的cookie http://9.0.9.11/workbench/workbench/login.html
+            hiloginItem.URL = string.Format("http://{0}/workbench/workbench/login.html", ipAddress);
 
             hiloginItem.ContentType = "application/x-www-form-urlencoded";
             
-            //hiloginItem.Accept = "image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/x-silverlight, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, application/x-ms-application, application/x-ms-xbap, application/vnd.ms-xpsdocument, application/xaml+xml, application/x-silverlight-2-b1, *";
-            //hiloginItem.UserAgent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)";
-            //hiloginItem.Encoding = null;//编码格式（utf-8,gb2312,gbk）     可选项 默认类会自动识别
-            //Encoding = Encoding.Default,
-            hiloginItem.Method = "Post";//URL     可选项 默认为Get
-                                        //hiloginItem.Postdata = string.Format("loginMessage=&alertText=&prpDuserUserCode={0}&prpDuserPassword={1}&prpDuserComCode=0000000000&imageField.x=44&imageField.y=19", loginname, loginpwd);
-                                        //hiloginItem.Postdata = string.Format("alertText=&prpDuserUserCode={0}&prpDuserPassword={1}&prpDuserComCode=0000000000&loginSyncRTXFlag=0&imageField.x=38&imageField.y=13", strloginname, strloginpwd);
+            
+            hiloginItem.Method = "Post";
             hiloginItem.Cookie = "";
             this.Hhloginresult = httphelper.GetHtml(hiloginItem);
             this.cookiealltheway = this.Hhloginresult.Cookie;
-            //用户名密码登录
+            cookiealltheway = Regex.Replace(cookiealltheway, "path=/[,;]*", "",RegexOptions.IgnoreCase);
+            cookiealltheway = Regex.Replace(cookiealltheway, "httponly", "", RegexOptions.IgnoreCase);
+            //2 用户名密码登录
             ///workbench/controller/workbench/login/login?redUrl=
             hiloginItem.URL = string.Format("http://{0}/workbench/controller/workbench/login/login?redUrl=", ipAddress);
-            
-            //strloginpwd = System.Web.HttpUtility.UrlEncode(strloginpwd);
-            //sessionUserCode=&sessionComCode=&sessionUserName=&QRCodeSwitch=1&UserCode=411123199004234524&Password=0.0.0.0.&ComCode=4101943202&qrCode=909647&RiskCode=0511&ClassCode=&ClassCodeSelect=05&RiskCodeSelect=0511&USE0509COM=%2C12%2C&CILIFESPECIALCITY=%2C2102%2C3302%2C3502%2C3702%2C4402%2C&image.x=41&image.y=12
-            hiloginItem.Postdata = string.Format(JsonConvert.SerializeObject(user));
+            string urlFirst = hiloginItem.URL;
+            hiloginItem.Postdata =JsonConvert.SerializeObject(user);
+            hiloginItem.Cookie = cookiealltheway;
             hiloginItem.ContentType = "application/json";
-           // hiloginItem.Cookie = this.cookiealltheway;
+            hiloginItem.Header.Add("Origin", "http://9.0.9.11");
             this.Hhloginresult = httphelper.GetHtml(hiloginItem);
+            //this.cookiealltheway = this.Hhloginresult.Cookie;
 
-
-            this.cookiealltheway = this.Hhloginresult.Cookie;
             var responseJson = JsonConvert.DeserializeObject(Hhloginresult.Html) as JObject;
-            string isRightUser= (string) responseJson["flag"];
+            bool isRightUser= (bool) responseJson["flag"];
             string redurl = (string)responseJson["redUrl"];
             string systemUserId = (string) responseJson["userId"];
 
-            if (isRightUser == "true")
+            if (isRightUser == true)
             {
                 // /workbench/controller/workbench/login/authenticationTools?userId=89979dc56021684301602176c9a83323&redUrl=
+                //3 获取uam地址及返回的requestToken
                 hiloginItem.URL = string.Format("http://{0}/workbench/controller/workbench/login/authenticationTools?userId={1}&redUrl=",ipAddress,systemUserId);
+                hiloginItem.Referer = "http://9.0.9.11/workbench/workbench/login.html";
                 hiloginItem.ContentType = "application/x-www-form-urlencoded";
+                hiloginItem.Cookie = cookiealltheway;
+                hiloginItem.Header.Add("Origin", "http://9.0.9.11");
                 Hhloginresult = httphelper.GetHtml(hiloginItem);
-                this.cookiealltheway = Hhloginresult.Cookie;
+                //this.cookiealltheway = Hhloginresult.Cookie;
                 string location=  Hhloginresult.Header["Location"];
-
+                string requestToken = location.Split('?')[1];
+                
+                //4 访问uam地址 获取uam的cookie
                 hiloginItem.URL = location;
+                hiloginItem.Accept ="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
+                hiloginItem.Referer = "http://9.0.9.11/workbench/workbench/login.html";
+                hiloginItem.UserAgent ="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.79 Safari/537.36 Maxthon/5.2.5.4000";
+
+                hiloginItem.Cookie = "";
                 Hhloginresult = httphelper.GetHtml(hiloginItem);
                 this.cookieSSO = Hhloginresult.Cookie;
-                Hhloginresult.Html
+                cookieSSO = Regex.Replace(cookieSSO, "path=/[,;]*", "", RegexOptions.IgnoreCase);
+                cookieSSO = Regex.Replace(cookieSSO, "httponly[,;]*", "", RegexOptions.IgnoreCase);
+                cookieSSO = Regex.Replace(cookieSSO, @"domain=.gpic.com.cn[,;]*", "", RegexOptions.IgnoreCase);
+                //HtmlDocument uamHtmlDocument = new HtmlDocument();
+                //uamHtmlDocument.LoadHtml(Hhloginresult.Html);
+
+                //var requestTokenNode = uamHtmlDocument.DocumentNode.SelectSingleNode("//input[@name='requestToken']");
+                //string requestToken=  requestTokenNode.GetAttributeValue("value","");
+
+                //5 访问uam/sso获得responseToken 返回工作台
+                hiloginItem.URL = string.Format("http://uam.gpic.com.cn/UAM/SSO");
+                hiloginItem.Postdata = string.Format(requestToken + "&redUrlnew=redUrlnew");
+                hiloginItem.Cookie = cookieSSO;
+                hiloginItem.Referer = location;
+                hiloginItem.Method = "post";
+                hiloginItem.Header.Add("Origin", "http://uam.gpic.com.cn");
+                hiloginItem.ContentType = "application/x-www-form-urlencoded";
+                Hhloginresult = httphelper.GetHtml(hiloginItem);
+                
+                HtmlDocument ssoHtmlDocument= new HtmlDocument();
+                ssoHtmlDocument.LoadHtml(Hhloginresult.Html);
+
+                var responseTokenNode = ssoHtmlDocument.DocumentNode.SelectSingleNode("//input[@name='responseToken']");
+                string responseToken = responseTokenNode.GetAttributeValue("value", "");
+                responseToken =
+                    System.Web.HttpUtility.UrlEncode(responseToken, System.Text.Encoding.GetEncoding("GB2312"));
+                var formActionNode = ssoHtmlDocument.DocumentNode.SelectSingleNode("//form[@name='submitForm']");
+                string actionUrl = formActionNode.GetAttributeValue("action", "");
+                //6 访问 /workbench/cas/login?param=null 返回控制台index页面
+                hiloginItem.URL = actionUrl;
+                hiloginItem.Cookie = cookiealltheway;
+                hiloginItem.ContentType = "application/x-www-form-urlencoded";
+                hiloginItem.Header.Add("Origin", "http://uam.gpic.com.cn");
+                hiloginItem.Method = "post";
+                hiloginItem.Referer = "http://uam.gpic.com.cn/UAM/SSO";
+                
+                hiloginItem.Postdata = string.Format("responseToken=" + responseToken + "&redUrl=");
+                Hhloginresult = httphelper.GetHtml(hiloginItem);
 
             }
-            return this._islogin = !this._hhloginresult.Html.Contains("302 Moved Temporarily");
+            return islogin = Hhloginresult.Html.Contains("/workbench/workbench/index.html");
         }
     }
 }
