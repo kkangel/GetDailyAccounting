@@ -43,6 +43,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\JamesNK\Newtonsoft.Json\Src\Newtonsoft.Json\bin\Debug\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NPOI">
+      <HintPath>lib\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML">
+      <HintPath>lib\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net">
+      <HintPath>lib\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats">
+      <HintPath>lib\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -54,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelGo.cs" />
     <Compile Include="GetPayDailyList.cs" />
     <Compile Include="PayDailyAccount.cs" />
     <Compile Include="LoginInsure.cs" />
