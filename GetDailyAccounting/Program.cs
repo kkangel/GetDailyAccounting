@@ -33,18 +33,19 @@ namespace GetDailyAccounting
                 cookiealltheway = login.cookiealltheway;
                 Console.WriteLine("用户:{0} 登录成功",userId);
                 Console.Write("请输入要查询缴费清单的起始日期（YYYY-MM-DD）：");
-                //string strDateStart = Console.ReadLine();
-                string strDateStart = "2019-1-1";
+                string strDateStart = Console.ReadLine();
+                //string strDateStart = "2019-1-1";
                 DateTime dtDateStart = Convert.ToDateTime(strDateStart);
                 Console.Write("请输入要查询缴费清单的截止日期（YYYY-MM-DD）：");
-                //string strDateEnd = Console.ReadLine();
-                string strDateEnd = "2019-1-14";
+                string strDateEnd = Console.ReadLine();
+                //string strDateEnd = "2019-1-1";
                 DateTime dtDateEnd = Convert.ToDateTime(strDateEnd);
                 GetPayDailyList payDailyList =new GetPayDailyList(dtDateStart,dtDateEnd);
                 payDailyList.CookieAllTheWay = cookiealltheway;
                 payDailyList.GetList();
             }
-           
+
+            Console.WriteLine("数据提取完毕");
             Console.ReadLine();
         }
     }

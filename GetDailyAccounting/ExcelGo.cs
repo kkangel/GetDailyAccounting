@@ -13,7 +13,7 @@ namespace GetDailyAccounting
 {
     static class  ExcelGo
     {
-        public static void JsonToExcel(List<Dictionary<string, object>> json, string fileName)
+        public static void JsonToExcel(List<Dictionary<string, string>> json, string fileName)
           {
               using (MemoryStream ms = new MemoryStream())
               {
@@ -48,7 +48,11 @@ namespace GetDailyAccounting
                      var values = json[i].Values.ToList();
                      for (var j = 0; j<values.Count();j++)
                      {
-                         dataRow.CreateCell(j).SetCellValue(values[j].ToString());
+                         if (values[j] != null)
+                         {
+                             dataRow.CreateCell(j).SetCellValue(values[j].ToString());
+                        }
+                         
                      }
  
                      rowIndex++;
