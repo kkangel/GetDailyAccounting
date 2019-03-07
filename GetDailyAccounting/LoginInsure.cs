@@ -139,7 +139,7 @@ namespace GetDailyAccounting
                 //string requestToken=  requestTokenNode.GetAttributeValue("value","");
 
                 //5 访问uam/sso获得responseToken 返回工作台
-                hiloginItem.URL = string.Format("http://uam.gpic.com.cn/UAM/SSO");
+                hiloginItem.URL = string.Format("http://9.0.8.93/UAM/SSO");
                 hiloginItem.Postdata = string.Format(requestToken + "&redUrlnew=redUrlnew");
                 hiloginItem.Cookie = cookieSSO;
                 hiloginItem.Referer = location;
