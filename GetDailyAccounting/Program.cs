@@ -19,7 +19,8 @@ namespace GetDailyAccounting
             //互动二部樊荣 410105198709140028-  123456-
             string userIpAddress = "9.0.9.11";
             string userId = "410105198709140028";
-            string userPwd = "123456";
+            //string userPwd = "Fan123123";
+            string userPwd = "fanrong0908";
             string userCom = "";
             string userValidateCode = "";
 
